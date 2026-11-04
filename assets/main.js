@@ -72,11 +72,6 @@
     syncToggleLabel();
   });
 
-  // mobile menu
-  document.querySelector(".nav__burger").addEventListener("click", () => {
-    document.body.classList.toggle("menu-open");
-  });
-
   /* ───────── smooth scroll ───────── */
   let lenis = null;
   if (window.Lenis && !reduceMotion) {
@@ -84,6 +79,13 @@
     const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
     requestAnimationFrame(raf);
   }
+
+  // mobile menu
+  document.querySelector(".nav__burger").addEventListener("click", () => {
+    const open = document.body.classList.toggle("menu-open");
+    // keep the page underneath still while the menu is open
+    if (lenis) open ? lenis.stop() : lenis.start();
+  });
 
   /* ───────── cursor: circle that follows + grows on links ───────── */
   const cursor = document.querySelector(".cursor");
@@ -114,11 +116,13 @@
 
   /* ───────── project cards ───────── */
   const isVideo = (f) => /\.(mp4|m4v|webm)$/i.test(f);
+  // a still frame shown until the video plays (iPhones in Low Power Mode never autoplay)
+  const poster = (p, f) => imgUrl(p, f.replace(/\.(mp4|m4v|webm)$/i, ".poster.jpg"));
   const cardHTML = (p) => {
     // card.jpg is the cover with its background extended to the card's 4:3 shape
     const cover = p.card || p.cover || "cover.jpg";
     const media = isVideo(cover)
-      ? `<video src="${imgUrl(p, cover)}" autoplay muted loop playsinline preload="metadata"></video>`
+      ? `<video src="${imgUrl(p, cover)}" poster="${poster(p, cover)}" autoplay muted loop playsinline preload="metadata"></video>`
       : `<img src="${imgUrl(p, cover)}" alt="${esc(p.title)}" loading="lazy" decoding="async">`;
     return `
     <a class="card reveal" href="${projectUrl(p)}">
@@ -154,7 +158,7 @@
       document.title = `${p.title} — winnie liu`;
       const facts = [["project type", p.type], ["year", p.year], ["my role", p.role], ["client", p.client]].filter((f) => f[1]);
       const media = (f, lazy) => isVideo(f)
-        ? `<video src="${imgUrl(p, f)}" autoplay muted loop playsinline preload="${lazy ? "metadata" : "auto"}"></video>`
+        ? `<video src="${imgUrl(p, f)}" poster="${poster(p, f)}" autoplay muted loop playsinline preload="${lazy ? "metadata" : "auto"}"></video>`
         : `<img src="${imgUrl(p, f)}" alt="${esc(p.title)}"${lazy ? ' loading="lazy" decoding="async"' : ""}>`;
       // a string is one full-width image; [a, b, …] sit side by side at the same height
       const row = (item) => Array.isArray(item)
@@ -222,6 +226,14 @@
       mount.querySelector("[data-others]").innerHTML = projects.slice(i + 1).concat(projects.slice(0, i)).slice(0, 3).map(cardHTML).join("");
     }
   }
+
+  // Safari only autoplays videos it knows are muted; set it on the element too and nudge play()
+  document.querySelectorAll("video[autoplay]").forEach((v) => {
+    v.muted = true;
+    v.playsInline = true;
+    const p = v.play();
+    if (p && p.catch) p.catch(() => {});
+  });
 
   // fade images in once loaded
   document.querySelectorAll(".card__media img, .card__media video").forEach((m) => {
