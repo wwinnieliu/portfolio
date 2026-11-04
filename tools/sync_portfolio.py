@@ -10,7 +10,7 @@ Rules
 - A file with "cover" in its name becomes cover.<ext>: the home-page card
   and the first (hero) image on the project page. It can be an image or video.
 - Photos are converted to JPEG (longest side 2400px), .mov/.mp4 to 1080p mp4,
-  GIFs are copied as-is.
+  GIFs become looping mp4s.
 - Media is used exactly as it is in include/ (no trimming). tools/trim.py can
   cut stray edge lines and big empty margins if TRIM is set to True.
 - assets/img/<slug>/ is rebuilt so it holds exactly what include/ holds.
@@ -58,8 +58,8 @@ def out_name(src):
     base = "cover" if "cover" in stem.lower() else slugify(stem)
     if ext in PHOTO:
         return base + ".jpg"
-    if ext in VIDEO:
-        return base + ".mp4"
+    if ext in VIDEO or ext in GIF:
+        return base + ".mp4"   # GIFs become looping videos: a fraction of the size
     return base + ext
 
 
@@ -129,6 +129,11 @@ def convert(src, dst, shave=0):
                         "-Z", str(MAX_EDGE), src, "--out", dst],
                        check=True, stdout=subprocess.DEVNULL)
         trim_photo(dst, shave)
+    elif ext in GIF:
+        subprocess.run([FFMPEG, "-loglevel", "error", "-y", "-i", src, "-vf",
+                        "scale='min(1920,iw)':-2:flags=lanczos,format=yuv420p",
+                        "-c:v", "libx264", "-crf", "28", "-preset", "slow", "-tune", "stillimage",
+                        "-movflags", "+faststart", "-an", dst], check=True)
     elif ext in VIDEO:
         frames, w, h = video_frames(src) if TRIM else ([], 0, 0)
         box = find_box(frames) if frames else None

@@ -38,7 +38,7 @@ window.PROJECTS = [
       "An editorial book based on Peter Mendelsund’s exploration of how we visualize stories as we read, designed to mirror the blurry, ever-shifting images that form between reader and page. Gradients and a playful palette create atmosphere and movement without sacrificing clarity, while woven-in imagery shows what I pictured while reading, making the design feel personal and process-driven. Expressive but readable typography guides you through the content, balancing something loose and imaginative with a layout that still holds together as a cohesive system.",
     cover: "cover.jpg",
     shave: { "cover.jpg": 0.02, "isimg-829350.jpg": 0.03 },
-    images: ["cover.jpg", "whatweseewhenweread-ezgif-com-optimize.gif", ["isimg-829350.jpg", "isimg-829749.jpg"], ["isimg-829439.jpg", "isimg-830341.jpg"], "isimg-828333.jpg"],
+    images: ["cover.jpg", "whatweseewhenweread-ezgif-com-optimize.mp4", ["isimg-829350.jpg", "isimg-829749.jpg"], ["isimg-829439.jpg", "isimg-830341.jpg"], "isimg-828333.jpg"],
   },
   {
     slug: "type-specimen",
@@ -52,7 +52,7 @@ window.PROJECTS = [
       "A type specimen book showcasing three typefaces with distinct personalities: Futura 100, Commuter Sans, and Richmond Text. Rather than keeping it clean and minimal, I layered acetate over paper for a tactile, translucent depth, using color and pattern to give each typeface its own visual world within a cohesive system. The spiral binding adds a handmade, zine-like feel, letting the typefaces breathe while giving the layouts enough energy to make flipping through genuinely fun.",
     cover: "cover.jpg",
     card: "card.jpg",
-    images: ["cover.jpg", "type-specimen.gif", ["dsc05171.jpg", "dsc05175.jpg"], ["dsc05186.jpg", "dsc05201.jpg"], ["dsc05202.jpg", "dsc05211.jpg"], ["typespecimen-mockup1.jpg", "typespecimen-mockup2.jpg"]],
+    images: ["cover.jpg", "type-specimen.mp4", ["dsc05171.jpg", "dsc05175.jpg"], ["dsc05186.jpg", "dsc05201.jpg"], ["dsc05202.jpg", "dsc05211.jpg"], ["typespecimen-mockup1.jpg", "typespecimen-mockup2.jpg"]],
   },
   {
     slug: "water",
@@ -123,4 +123,4 @@ window.PROJECTS = [
     images: ["cover.jpg", "pinklogosoap.jpg", "greenlogosoap.jpg", "print-layouts.jpg", "screenshot-2026-10-14-at-9-07-05-pm.jpg"],
   },
 ];
-window.MEDIA_VERSION = "1793755080";
+window.MEDIA_VERSION = "1793756479";
