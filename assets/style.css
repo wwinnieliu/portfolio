@@ -38,6 +38,8 @@
 /* ───────── base ───────── */
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
+/* stop iPhone Safari from enlarging text when the phone is turned sideways */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 body {
@@ -123,6 +125,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 .menu-open .mobile-menu { opacity: 1; visibility: visible; }
+.menu-open { overflow: hidden; }
 
 @media (max-width: 760px) {
   :root { --pad: 16px; --gap: 16px; }
@@ -187,7 +190,8 @@ main { padding: 0 var(--pad); }
   opacity: 0;
 }
 .card__media .is-loaded { opacity: 1; }
-.card:hover .card__media img, .card:hover .card__media video { transform: scale(1.035); }
+/* hover zoom only with a mouse, so it doesn't stick after a tap on phones/tablets */
+@media (hover: hover) { .card:hover .card__media img, .card:hover .card__media video { transform: scale(1.035); } }
 .card__tag {
   position: absolute; top: 14px; right: 14px; z-index: 1;
   display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;
@@ -221,12 +225,13 @@ main { padding: 0 var(--pad); }
    the page. every cell in a row has the same shape; a picture with a different
    shape sits in the middle and its own background colour fills the rest. */
 .row { display: grid; grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr)); gap: var(--gap); }
-.row .shot { aspect-ratio: var(--cell, auto); border-radius: var(--radius); background: var(--fill, var(--card)); overflow: hidden; }
-.row .shot img, .row .shot video { height: 100%; object-fit: contain; border-radius: 0; background: transparent; }
+.row .shot { position: relative; aspect-ratio: var(--cell, auto); border-radius: var(--radius); background: var(--fill, var(--card)); overflow: hidden; }
+/* absolutely placed so Safari sizes the picture from the cell, not from the picture */
+.row .shot img, .row .shot video { position: absolute; inset: 0; height: 100%; object-fit: contain; border-radius: 0; background: transparent; }
 @media (max-width: 760px) {
   .row { grid-template-columns: 1fr; }
   .row .shot { aspect-ratio: auto; background: none; }
-  .row .shot img, .row .shot video { height: auto; border-radius: var(--radius); }
+  .row .shot img, .row .shot video { position: static; height: auto; border-radius: var(--radius); }
 }
 .overview { padding: 72px 0 24px; }
 .label { margin: 0 0 12px; font-size: 20px; color: var(--fg); }

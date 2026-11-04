@@ -181,8 +181,19 @@ def sync_media(slug, folder, shaves=None):
             done[name] = stamp(src, shave)
         made.append(name)
     json.dump({k: v for k, v in done.items() if k in made}, open(record, "w"), indent=1)
+    # a still frame for each video, shown until it plays (iPhone Low Power Mode never autoplays)
+    posters = []
+    for name in made:
+        if name.endswith(".mp4"):
+            still = name[:-4] + ".poster.jpg"
+            dst = os.path.join(dst_dir, name)
+            out = os.path.join(dst_dir, still)
+            if not os.path.exists(out) or os.path.getmtime(out) < os.path.getmtime(dst):
+                subprocess.run([FFMPEG, "-loglevel", "error", "-y", "-ss", "0.3", "-i", dst, "-frames:v", "1",
+                                "-q:v", "4", out], check=True)
+            posters.append(still)
     for f in os.listdir(dst_dir):
-        if f not in made and f not in (".sources.json", "card.jpg"):
+        if f not in made and f not in posters and f not in (".sources.json", "card.jpg"):
             os.remove(os.path.join(dst_dir, f))
     covers = [m for m in made if m.startswith("cover.")]
     if not covers:
