@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>about — winnie liu</title>
+<meta name="description" content="winnie liu — graphic designer at the rhode island school of design (risd).">
+<link rel="icon" href="../assets/img/favicon.png">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Funnel+Sans:wght@400;500;700&family=Geist:wght@400&family=Inter:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css?v=7">
+</head>
+<body data-page="about" data-root="../">
+<main class="page-top">
+  <section class="about">
+    <div class="about__text">
+      <p class="about__intro">hi, i’m winnie,</p>
+      <p class="about__intro">a graphic designer at the rhode island school of design (risd). i work across editorial design, brand identity, product design, and marketing. drawing on a background in graphic design, photography, and illustration, i focus on visual storytelling and brand systems that connect meaningfully with their audiences. i&nbsp;enjoy guiding ideas from early concept through final production, shaping them into cohesive and emotionally resonant work.</p>
+    </div>
+    <figure class="about__photo"><img src="../assets/img/winnie.jpg" alt="winnie liu"></figure>
+
+    <p class="about__k about__k--1">resume</p>
+    <div class="about__v about__v--1">
+      <p><a class="link-arrow" href="https://drive.google.com/file/d/16DddozemW3wPrbQvZhU0McJzJ-4darxr/view?usp=sharing" target="_blank" rel="noopener">view resume</a></p>
+    </div>
+
+    <p class="about__k about__k--2">education</p>
+    <div class="about__v about__v--2">
+      <p class="muted">rhode island school of design (risd)</p>
+      <p>bfa graphic design · 2024 – 2028</p>
+    </div>
+  </section>
+
+  <section class="board" data-board>
+    <div class="board__head">
+      <p class="label">draw anything below!</p>
+      <div class="tools">
+        <button class="swatch is-active" data-color="ink" style="background:var(--fg)" aria-label="default ink"></button>
+        <button class="swatch" data-color="#e2553d" style="background:#e2553d" aria-label="red"></button>
+        <button class="swatch" data-color="#3d6be2" style="background:#3d6be2" aria-label="blue"></button>
+        <button class="swatch" data-color="#8a5cd6" style="background:#8a5cd6" aria-label="purple"></button>
+        <button class="swatch" data-color="#5f9a62" style="background:#5f9a62" aria-label="green"></button>
+        <button class="swatch" data-color="#e8b93a" style="background:#e8b93a" aria-label="yellow"></button>
+        <span class="sep"></span>
+        <input type="range" min="1" max="24" value="4" data-size aria-label="brush size">
+        <button class="tool-btn" data-erase>erase</button>
+        <button class="tool-btn" data-undo>undo</button>
+        <button class="tool-btn" data-clear>clear</button>
+        <button class="tool-btn" data-download>save png</button>
+      </div>
+    </div>
+    <div class="board__canvas">
+      <canvas></canvas>
+      <div class="board__hint">draw anything!</div>
+    </div>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="../assets/projects.js?v=7"></script>
+<script src="../assets/main.js?v=7"></script>
+</body>
+</html>
