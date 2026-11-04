@@ -1,0 +1,4 @@
+.DS_Store
+__pycache__/
+# local record of which include/ file each image came from (used by the sync)
+.sources.json
