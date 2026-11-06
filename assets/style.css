@@ -235,7 +235,7 @@ main { padding: 0 var(--pad); }
 }
 .overview { padding: 72px 0 24px; }
 .label { margin: 0 0 12px; font-size: 20px; color: var(--fg); }
-.overview__text { margin: 0; font-size: 24px; font-weight: 500; line-height: 1.3; letter-spacing: -0.02em; max-width: 1180px; text-transform: none; }
+.overview__text { margin: 0; font-size: 24px; font-weight: 500; line-height: 1.3; letter-spacing: -0.02em; max-width: 1180px; }
 .project__link { display: inline-flex; align-items: center; gap: 0.35em; margin-top: 28px; font-size: 20px; letter-spacing: -0.02em; transition: opacity 0.25s ease; }
 .project__link:hover { opacity: 0.55; }
 .project__link svg { width: 0.8em; height: 0.8em; }
@@ -247,8 +247,8 @@ main { padding: 0 var(--pad); }
 /* problem / solution: tag on the left, heading and text on the right */
 .story { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); column-gap: var(--gap); padding-bottom: 72px; align-items: start; }
 .story__tag { margin: 0; font-size: 20px; letter-spacing: -0.02em; }
-.story__title { margin: 0 0 12px; font-size: clamp(24px, 2vw, 28px); font-weight: 700; line-height: 1.15; letter-spacing: -0.04em; text-transform: none; }
-.story__text { margin: 0; font-size: 18px; line-height: 1.3; letter-spacing: -0.02em; text-transform: none; }
+.story__title { margin: 0 0 12px; font-size: clamp(24px, 2vw, 28px); font-weight: 700; line-height: 1.15; letter-spacing: -0.04em; }
+.story__text { margin: 0; font-size: 18px; line-height: 1.3; letter-spacing: -0.02em; }
 @media (max-width: 760px) {
   .story { grid-template-columns: 1fr; row-gap: 12px; padding-bottom: 56px; }
 }
@@ -323,4 +323,4 @@ main { padding: 0 var(--pad); }
 .footer__msg p { margin: 0; }
 .footer__msg p + p { margin-top: 1.6em; }
 .footer__bar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; display: flex; justify-content: space-between; padding: 0 var(--pad) 22px; font-size: 16px; color: var(--foot-ink); pointer-events: none; }
-.footer__clock { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: uppercase; }
+.footer__clock { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0; }
