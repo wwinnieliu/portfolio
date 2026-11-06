@@ -107,7 +107,15 @@ def make_card(dst_dir, cover):
         extra = round(w / CARD_AR) - h
         band = max(4, h // 30)
         edge = np.concatenate([im[:band], im[-band:]])
-        im = extend(im, top=extra // 2, bottom=extra - extra // 2, mode=card_fill(edge))
+        top, bottom = extra // 2, extra - extra // 2
+        mode = card_fill(edge)
+        if mode == "solid":
+            # the work runs off one edge only: leave it touching the card there,
+            # and add all the background on the plain side
+            calm_top, calm_bottom = (im[:band].std((0, 1)).max() < 12, im[-band:].std((0, 1)).max() < 12)
+            if calm_top != calm_bottom:
+                top, bottom = (extra, 0) if calm_top else (0, extra)
+        im = extend(im, top=top, bottom=bottom, mode=mode)
     else:
         extra = round(h * CARD_AR) - w
         band = max(4, w // 30)
@@ -218,6 +226,25 @@ def sync_media(slug, folder, shaves=None, card_from=None):
     return made, cover, make_card(dst_dir, cover or (card_from if card_from in made else None))
 
 
+def fit_rows(slug, layout):
+    """Photos side by side must share one shape: a narrower photo gets its own
+    background continued left and right until it matches the widest in its row."""
+    dst_dir = os.path.join(IMG_DIR, slug)
+    for row in layout:
+        if not isinstance(row, list) or not all(f.endswith(".jpg") for f in row):
+            continue
+        sizes = {f: Image.open(os.path.join(dst_dir, f)).size for f in row}
+        widest = max(w / h for w, h in sizes.values())
+        for f, (w, h) in sizes.items():
+            extra = round(h * widest) - w
+            if extra < 2:
+                continue
+            im = np.asarray(Image.open(os.path.join(dst_dir, f)).convert("RGB"))
+            im = extend(im, left=extra // 2, right=extra - extra // 2)
+            Image.fromarray(im).save(os.path.join(dst_dir, f), "JPEG", quality=82, optimize=True)
+            print(f"  {f}: background extended to fit its row")
+
+
 def merge_layout(layout, made, cover):
     have, seen, out = set(made), set(), []
     for item in layout:
@@ -254,7 +281,9 @@ def main():
         layout = json.loads(re.search(r"images: (\[.*?\]),\n", b, re.S).group(1))
         # keep_order: the cover is still the card, but the page keeps its own opening
         keep = "keep_order: true" in b
-        images = json.dumps(merge_layout(layout, made, None if keep else cover), ensure_ascii=False).replace('","', '", "')
+        merged = merge_layout(layout, made, None if keep else cover)
+        fit_rows(slug, merged)
+        images = json.dumps(merged, ensure_ascii=False).replace('","', '", "')
         b = re.sub(r"images: \[.*?\],\n", lambda _: f"images: {images},\n", b, flags=re.S)
         b = re.sub(r'    card: "[^"]*",\n', "", b)
         if card:

@@ -36,7 +36,7 @@ window.PROJECTS = [
     cover: "cover.jpg",
     keep_order: true,
     card: "card.jpg",
-    images: ["track-of-time-motion.mp4", "clock-ending.mp4", "pb059876.jpg", ["pb059851.jpg", "cover.jpg"], ["pb059647.jpg", "pb059731.jpg"], ["pb059761.jpg", "pb050426.jpg"], ["pb050367.jpg", "pb050373.jpg"], ["track-of-time-color-palette.jpg", "pb050526.jpg"]],
+    images: ["clock-ending.mp4", "track-of-time-motion.mp4", "pb059876.jpg", ["pb059851.jpg", "track-of-time.jpg"], ["cover.jpg", "pb059731.jpg"], ["pb059761.jpg", "pb050426.jpg"], ["pb050367.jpg", "pb050373.jpg"], ["track-of-time-color-palette.jpg", "pb050526.jpg"]],
   },
   {
     slug: "design-justice-network-principles",
@@ -95,20 +95,6 @@ window.PROJECTS = [
     images: ["cover.jpg", "dsc05529.jpg"],
   },
   {
-    slug: "cca-book-covers",
-    folder: "CCA Book Covers",
-    title: "cca book covers",
-    type: "book cover design",
-    year: "2026",
-    role: "book cover designer",
-    client: "self directed",
-    overview:
-      "A series of three book covers for the CCA’s “Makers of Modern” collection, each spotlighting a different architect and movement: Louis Sullivan’s Art Nouveau-influenced Chicago style, Richard Neutra’s Modernism, and Frank Gehry’s Deconstructivism. A bold color for each architect (blue, purple, green) and large-scale halftone shapes unify the system, with the shapes nodding to each signature aesthetic: organic circles for Sullivan, geometric cutouts for Neutra, and irregular polygons for Gehry. Architect quotes float across each cover, grounding the series in their individual voices while giving each one a distinct visual identity.",
-    cover: "cover.jpg",
-    card: "card.jpg",
-    images: ["cover.jpg", "blue-cca-mockup.jpg", "green-cca-mockup.jpg", "purple-cca-mockup.jpg"],
-  },
-  {
     slug: "nyc-card-deck",
     folder: "NYC Card Deck",
     title: "nyc card deck",
@@ -149,4 +135,4 @@ window.PROJECTS = [
     images: ["cover.jpg", "pinklogosoap.jpg", "greenlogosoap.jpg", "print-layouts.jpg", "screenshot-2026-10-14-at-9-07-05-pm.jpg"],
   },
 ];
-window.MEDIA_VERSION = "1793928605";
+window.MEDIA_VERSION = "1793929640";
