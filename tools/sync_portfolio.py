@@ -28,7 +28,7 @@ from PIL import Image, ImageOps
 import imageio_ffmpeg
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from trim import find_box, extend
+from trim import find_box, extend, tip_apex, complete_tip, continue_dark
 
 FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
 
@@ -91,9 +91,11 @@ def card_fill(edge):
     return "stretch" if edge.std((0, 1)).max() < 12 else "solid"
 
 
-def make_card(dst_dir, cover):
+def make_card(dst_dir, cover, tips=None):
     """card.jpg: the cover grown to the card's 4:3 shape by continuing its own
-    background (mirrored), so the card never crops the work. None if it already fits."""
+    background (mirrored), so the card never crops the work. None if it already fits.
+    tips: objects the photo itself cuts off at the bottom, as [edge a, edge b] pairs in
+    cover.jpg pixels; they get finished, and the whole picture is centred on the card."""
     card = os.path.join(dst_dir, "card.jpg")
     if os.path.exists(card):
         os.remove(card)
@@ -115,7 +117,17 @@ def make_card(dst_dir, cover):
             calm_top, calm_bottom = (im[:band].std((0, 1)).max() < 12, im[-band:].std((0, 1)).max() < 12)
             if calm_top != calm_bottom:
                 top, bottom = (extra, 0) if calm_top else (0, extra)
+        if tips:
+            reach = min(extra, max(round(tip_apex(a, b)[1]) - h for a, b in tips))
+            top = (extra - reach) // 2
+            bottom = extra - top
         im = extend(im, top=top, bottom=bottom, mode=mode)
+        if tips:
+            im = continue_dark(continue_dark(im, top, "top"), top + h, "bottom")
+        for a, b in tips or []:
+            shift = lambda line: [[x, y + top] for x, y in line]
+            im = complete_tip(im.astype(np.float32), h + top, shift(a), shift(b))
+        im = np.clip(im, 0, 255).astype(np.uint8)
     else:
         extra = round(h * CARD_AR) - w
         band = max(4, w // 30)
@@ -170,7 +182,7 @@ def convert(src, dst, shave=0):
         shutil.copy2(src, dst)
 
 
-def sync_media(slug, folder, shaves=None, card_from=None):
+def sync_media(slug, folder, shaves=None, card_from=None, tips=None):
     shaves = shaves or {}
     root = os.path.join(BASE, os.path.expanduser(folder))
     inc = os.path.join(root, "include")
@@ -223,26 +235,70 @@ def sync_media(slug, folder, shaves=None, card_from=None):
         print(f"  ! no file with 'cover' in its name in {folder}/include")
     cover = covers[0] if covers else None
     # no "cover" file: the cover: named in projects.js is used for the card only
-    return made, cover, make_card(dst_dir, cover or (card_from if card_from in made else None))
+    # card_tips belongs to one photo: ignore it once that cover file is replaced
+    tip_list = None
+    if tips and cover and tips["source"] == done.get(cover, "").split("|")[0]:
+        tip_list = tips["tips"]
+    return made, cover, make_card(dst_dir, cover or (card_from if card_from in made else None), tip_list)
+
+
+def flat_runs(a):
+    """[start, end) runs of rows identical to the row above: empty stretches of a flat graphic."""
+    same = np.abs(a[1:].astype(np.int16) - a[:-1]).max((1, 2)) < 6
+    idx = np.flatnonzero(same) + 1
+    if not len(idx):
+        return []
+    runs = np.split(idx, np.flatnonzero(np.diff(idx) > 1) + 1)
+    return [(r[0], r[-1] + 1) for r in runs if len(r) >= a.shape[0] * 0.02]
+
+
+def grow_flat(a, new_h, runs):
+    """Make a flat graphic taller by repeating rows in its empty stretches only."""
+    extra, total = new_h - a.shape[0], sum(e - s for s, e in runs)
+    counts = np.ones(a.shape[0], int)
+    left = extra
+    for i, (s, e) in enumerate(runs):
+        n = left if i == len(runs) - 1 else round(extra * (e - s) / total)
+        counts[(s + e) // 2] += n
+        left -= n
+    return np.repeat(a, counts, 0)
+
+
+def widen(a, extra):
+    """Continue a photo's background sideways, on the plain side if only one side is plain:
+    a hand or arm running off the other edge stays at the frame instead of being smeared."""
+    band = max(4, a.shape[1] // 100)
+    calm_l, calm_r = (a[:, :band].std((0, 1)).max() < 12, a[:, -band:].std((0, 1)).max() < 12)
+    left = extra // 2
+    if calm_l != calm_r:
+        left = extra if calm_l else 0
+    return extend(a, left=left, right=extra - left)
 
 
 def fit_rows(slug, layout):
-    """Photos side by side must share one shape: a narrower photo gets its own
-    background continued left and right until it matches the widest in its row."""
+    """Things side by side must share one shape. A flat graphic grows taller through its
+    empty stretches, which leaves the photo beside it untouched. Otherwise a narrower photo
+    gets its own background continued sideways until it matches the widest in its row."""
     dst_dir = os.path.join(IMG_DIR, slug)
     for row in layout:
         if not isinstance(row, list) or not all(f.endswith(".jpg") for f in row):
             continue
-        sizes = {f: Image.open(os.path.join(dst_dir, f)).size for f in row}
-        widest = max(w / h for w, h in sizes.values())
-        for f, (w, h) in sizes.items():
-            extra = round(h * widest) - w
-            if extra < 2:
+        ims = {f: np.asarray(Image.open(os.path.join(dst_dir, f)).convert("RGB")) for f in row}
+        ratio = {f: a.shape[1] / a.shape[0] for f, a in ims.items()}
+        runs = {f: flat_runs(a) for f, a in ims.items()}
+        flat = {f for f, a in ims.items() if sum(e - s for s, e in runs[f]) >= a.shape[0] * 0.3}
+        photos = [f for f in row if f not in flat] or row
+        target = max(ratio[f] for f in photos)
+        for f, a in ims.items():
+            h, w, _ = a.shape
+            if f in flat and f not in photos and ratio[f] > target and round(w / target) - h >= 2:
+                a, how = grow_flat(a, round(w / target), runs[f]), "made taller"
+            elif round(h * target) - w >= 2:
+                a, how = widen(a, round(h * target) - w), "background extended"
+            else:
                 continue
-            im = np.asarray(Image.open(os.path.join(dst_dir, f)).convert("RGB"))
-            im = extend(im, left=extra // 2, right=extra - extra // 2)
-            Image.fromarray(im).save(os.path.join(dst_dir, f), "JPEG", quality=82, optimize=True)
-            print(f"  {f}: background extended to fit its row")
+            Image.fromarray(a).save(os.path.join(dst_dir, f), "JPEG", quality=88, optimize=True)
+            print(f"  {f}: {how} to fit its row")
 
 
 def merge_layout(layout, made, cover):
@@ -273,8 +329,9 @@ def main():
         # shave: { "file.jpg": 0.02 } cuts 2% off every side of that picture
         m = re.search(r"shave: (\{.*?\}),\n", b, re.S)
         named = re.search(r'cover: "([^"]+)"', b)
+        t = re.search(r"card_tips: (\{.*?\}),\n", b, re.S)
         res = sync_media(slug, folder.group(1), json.loads(m.group(1)) if m else None,
-                         named.group(1) if named else None)
+                         named.group(1) if named else None, json.loads(t.group(1)) if t else None)
         if not res:
             return b
         made, cover, card = res

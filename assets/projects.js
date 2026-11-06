@@ -35,6 +35,7 @@ window.PROJECTS = [
     },
     cover: "cover.jpg",
     keep_order: true,
+    card_tips: {"source": "cover.JPEG", "tips": [[[[458, 950], [730, 1350]], [[860, 1352], [1000, 1250]]], [[[1000, 1090], [1400, 1352]], [[1910, 950], [1672, 1352]]]]},
     card: "card.jpg",
     images: ["clock-ending.mp4", "track-of-time-motion.mp4", "pb059876.jpg", ["pb059851.jpg", "track-of-time.jpg"], ["cover.jpg", "pb059731.jpg"], ["pb059761.jpg", "pb050426.jpg"], ["pb050367.jpg", "pb050373.jpg"], ["track-of-time-color-palette.jpg", "pb050526.jpg"]],
   },
@@ -135,4 +136,4 @@ window.PROJECTS = [
     images: ["cover.jpg", "pinklogosoap.jpg", "greenlogosoap.jpg", "print-layouts.jpg", "screenshot-2026-10-14-at-9-07-05-pm.jpg"],
   },
 ];
-window.MEDIA_VERSION = "1793929640";
+window.MEDIA_VERSION = "1793941330";

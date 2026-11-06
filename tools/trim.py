@@ -129,3 +129,84 @@ def extend(img, top=0, bottom=0, left=0, right=0, mode="stretch"):
                         _extend_top(t[::-1], right, mode)[::-1]], 0)
     return np.clip(t.transpose(1, 0, 2), 0, 255).astype(np.uint8)
 
+
+
+# ───────── finishing what a photo cut off ─────────
+
+def _sample(img, x, y):
+    """bilinear colours of img at float coordinates x, y."""
+    x0, y0 = np.floor(x).astype(int), np.floor(y).astype(int)
+    fx, fy = (x - x0)[..., None], (y - y0)[..., None]
+    h, w, _ = img.shape
+    x0, x1 = np.clip(x0, 0, w - 1), np.clip(x0 + 1, 0, w - 1)
+    y0, y1 = np.clip(y0, 0, h - 1), np.clip(y0 + 1, 0, h - 1)
+    return ((img[y0, x0] * (1 - fx) + img[y0, x1] * fx) * (1 - fy)
+            + (img[y1, x0] * (1 - fx) + img[y1, x1] * fx) * fy)
+
+
+def tip_apex(a, b):
+    """where the two edges of an object meet. a, b: [[x1, y1], [x2, y2]]."""
+    (x1, y1), (x2, y2) = a
+    (x3, y3), (x4, y4) = b
+    d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
+    p, q = x1 * y2 - y1 * x2, x3 * y4 - y3 * x4
+    return ((p * (x3 - x4) - (x1 - x2) * q) / d, (p * (y3 - y4) - (y1 - y2) * q) / d)
+
+
+def complete_tip(img, cut, a, b):
+    """img: (h, w, 3) float, photo content above row `cut`. An object runs off that row
+    between edges a and b. Below it, continue each edge's own bands along that edge,
+    joined with a mitre where they meet, so the object ends in a real corner."""
+    ax, ay = tip_apex(a, b)
+    ys, xs = np.mgrid[cut:min(img.shape[0], int(ay) + 3), 0:img.shape[1]].astype(np.float32)
+    def dist(line):
+        # distance from line, positive on the side the object is on
+        (x1, y1), (x2, y2) = line
+        nx, ny = y2 - y1, x1 - x2
+        k = np.hypot(nx, ny)
+        inside = (other_mid[0] - x1) * nx + (other_mid[1] - y1) * ny
+        s = 1 if inside > 0 else -1
+        return s * ((xs - x1) * nx + (ys - y1) * ny) / k
+    def along(line):
+        # slide each pixel along the edge back up into the photo
+        (x1, y1), (x2, y2) = line
+        src_y = cut - 2.0
+        t = (ys - src_y) / (y2 - y1)
+        return _sample(img, xs - t * (x2 - x1), np.full_like(ys, src_y))
+    def at_cut(line):
+        (x1, y1), (x2, y2) = line
+        return x1 + (cut - y1) * (x2 - x1) / (y2 - y1)
+    other_mid = ((at_cut(a) + at_cut(b)) / 2, float(cut))     # a point inside the object
+    da, db = dist(a), dist(b)
+    mix = np.clip((db - da) / 6 + 0.5, 0, 1)[..., None]     # 1 near edge a → 0 near edge b
+    paint = along(a) * mix + along(b) * (1 - mix)
+    alpha = np.clip(np.minimum(da, db) / 1.5 + 0.5, 0, 1)[..., None]
+    img[cut:cut + ys.shape[0]] = img[cut:cut + ys.shape[0]] * (1 - alpha) + paint * alpha
+    return img
+
+
+def continue_dark(img, cut, side, seed=7):
+    """Rows beyond `cut` on one side ("top" rows above it, "bottom" rows from it on), filled with
+    the dark background found at that edge of the photo, column by column, with the photo's own
+    grain: no seam. Columns where the work reaches the edge borrow from the dark ones beside them."""
+    img = img.astype(np.float32)
+    h, w, _ = img.shape
+    band = img[cut:cut + 24] if side == "top" else img[cut - 24:cut]
+    line = np.median(band, 0)
+    grey = line.mean(1)
+    dark = grey < 30
+    pad = w // 50                                       # stay clear of the glow around the work
+    dark &= np.convolve(~dark, np.ones(2 * pad + 1), "same") == 0
+    xs = np.arange(w)
+    line = np.stack([np.interp(xs, xs[dark], line[dark, i]) for i in range(3)], 1)
+    line = _smooth(line, max(3, w // 30))
+    grain = float(np.median(band[:, dark].mean(2).std(0)))
+    n = cut if side == "top" else h - cut
+    rows = np.repeat(line[None], n, 0)
+    rows += np.random.default_rng(seed).normal(0, grain, (n, w, 1))
+    rows -= rows[:, dark].mean((0, 1)) - band[:, dark].mean((0, 1))   # same overall level as the photo
+    if side == "top":
+        img[:cut] = rows
+    else:
+        img[cut:] = rows
+    return img
