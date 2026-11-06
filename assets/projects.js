@@ -125,9 +125,9 @@ window.PROJECTS = [
     slug: "clix",
     folder: "Clix",
     title: "clix",
-    type: "packaging design & brand identity",
+    type: "packaging design, brand identity",
     year: "2025",
-    role: "brand & packaging designer",
+    role: "brand, packaging designer",
     client: "self directed",
     overview:
       "Developed from an entrepreneurship class, Clix is a business concept centered on a modular kitchenware system whose magnetic attachments let users customize their kitchenware to suit how they dine. Drawing on the Muji aesthetic, I designed a series of posters and logos that balance minimalism with a decorative touch. The result is a clean, cohesive brand identity that feels as functional and adaptable as the product itself.",
@@ -139,9 +139,9 @@ window.PROJECTS = [
     slug: "rainshower",
     folder: "Rainshower",
     title: "rainshower",
-    type: "packaging design & brand identity",
+    type: "packaging design, brand identity",
     year: "2024",
-    role: "packaging designer & brand designer",
+    role: "packaging designer, brand designer",
     client: "self directed",
     overview:
       "Rainshower is an organic soap brand inspired by South America’s rainforests, created to raise awareness about endangered animals threatened by habitat loss and overhunting, with the chameleon as its central figure. I designed custom typography based on the chameleon’s scales, paired with muted greens and earthy tones that reinforce the product’s organic, sustainable character. Clean packaging ties it together, communicating simplicity and environmental consciousness.",
