@@ -83,6 +83,14 @@ def trim_photo(path, shave=0):
     im.save(path, "JPEG", quality=82, optimize=True)
 
 
+def card_fill(edge):
+    """How to grow a card: dark and plain → continue it; dark with the work running off
+    the edge → plain colour (a mirror would duplicate the work); walls, greys → mirror."""
+    if np.median(edge) >= 40:
+        return "mirror"
+    return "stretch" if edge.std((0, 1)).max() < 12 else "solid"
+
+
 def make_card(dst_dir, cover):
     """card.jpg: the cover grown to the card's 4:3 shape by continuing its own
     background (mirrored), so the card never crops the work. None if it already fits."""
@@ -95,19 +103,16 @@ def make_card(dst_dir, cover):
     h, w, _ = im.shape
     if abs(w / h - CARD_AR) < 0.01:
         return None
-    # plain dark backgrounds are simply continued; everything else (walls, studio greys) is mirrored
     if w / h > CARD_AR:
         extra = round(w / CARD_AR) - h
         band = max(4, h // 30)
         edge = np.concatenate([im[:band], im[-band:]])
-        flat = edge.std((0, 1)).max() < 12 and edge.mean() < 40
-        im = extend(im, top=extra // 2, bottom=extra - extra // 2, mode="stretch" if flat else "mirror")
+        im = extend(im, top=extra // 2, bottom=extra - extra // 2, mode=card_fill(edge))
     else:
         extra = round(h * CARD_AR) - w
         band = max(4, w // 30)
         edge = np.concatenate([im[:, :band], im[:, -band:]], 1)
-        flat = edge.std((0, 1)).max() < 12 and edge.mean() < 40
-        im = extend(im, left=extra // 2, right=extra - extra // 2, mode="stretch" if flat else "mirror")
+        im = extend(im, left=extra // 2, right=extra - extra // 2, mode=card_fill(edge))
     Image.fromarray(im).save(card, "JPEG", quality=82, optimize=True)
     return "card.jpg"
 
@@ -247,7 +252,9 @@ def main():
             return b
         made, cover, card = res
         layout = json.loads(re.search(r"images: (\[.*?\]),\n", b, re.S).group(1))
-        images = json.dumps(merge_layout(layout, made, cover), ensure_ascii=False).replace('","', '", "')
+        # keep_order: the cover is still the card, but the page keeps its own opening
+        keep = "keep_order: true" in b
+        images = json.dumps(merge_layout(layout, made, None if keep else cover), ensure_ascii=False).replace('","', '", "')
         b = re.sub(r"images: \[.*?\],\n", lambda _: f"images: {images},\n", b, flags=re.S)
         b = re.sub(r'    card: "[^"]*",\n', "", b)
         if card:

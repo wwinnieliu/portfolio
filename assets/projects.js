@@ -6,6 +6,7 @@
   cover: made from the include/ file with "cover" in its name. with no such file,
   name any image here and it is used for the home-page card only.
   website, credits, problem and solution ({ title, text }) are optional.
+  keep_order: true leaves images in the order listed instead of opening with the cover.
   images: files inside assets/img/<slug>/ ; the first one is the hero.
   wrap files in [ ] to show them side by side at the same height; .mp4 files
   play as looping videos. images are never cropped, except
@@ -32,9 +33,10 @@ window.PROJECTS = [
       title: "Small Cards for a Shared Pause",
       text: "A set of risograph cards handed out on the platform. Riders write about their own wait on the back of a card, which turns a few idle minutes into a record that strangers waiting with them can share.",
     },
-    cover: "pb059851.jpg",
+    cover: "cover.jpg",
+    keep_order: true,
     card: "card.jpg",
-    images: ["track-of-time-motion.mp4", "clock-ending.mp4", "pb059876.jpg", ["pb059851.jpg", "pb050281.jpg"], ["pb059647.jpg", "pb059731.jpg"], ["pb059761.jpg", "pb050426.jpg"], ["pb050367.jpg", "pb050373.jpg"], ["track-of-time-color-palette.jpg", "pb050526.jpg"]],
+    images: ["track-of-time-motion.mp4", "clock-ending.mp4", "pb059876.jpg", ["pb059851.jpg", "cover.jpg"], ["pb059647.jpg", "pb059731.jpg"], ["pb059761.jpg", "pb050426.jpg"], ["pb050367.jpg", "pb050373.jpg"], ["track-of-time-color-palette.jpg", "pb050526.jpg"]],
   },
   {
     slug: "design-justice-network-principles",
@@ -147,4 +149,4 @@ window.PROJECTS = [
     images: ["cover.jpg", "pinklogosoap.jpg", "greenlogosoap.jpg", "print-layouts.jpg", "screenshot-2026-10-14-at-9-07-05-pm.jpg"],
   },
 ];
-window.MEDIA_VERSION = "1793928354";
+window.MEDIA_VERSION = "1793928605";

@@ -106,6 +106,9 @@ def _extend_top(img, n, mode):
         return img[:0]
     if mode == "mirror" and n < h // 3:
         return img[1:n + 1][::-1]
+    if mode == "solid":
+        # the plain colour of the background, for a subject that runs off the edge
+        return np.broadcast_to(np.median(img[:max(4, h // 100)], axis=(0, 1)), (n, w, 3)).copy()
     # stretch a softened copy of the edge, fading in from the real edge row
     k = max(4, h // 100)
     line = _smooth(img[:k].mean(0), max(3, w // 60))
