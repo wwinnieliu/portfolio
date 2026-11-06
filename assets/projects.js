@@ -1,9 +1,11 @@
 /*
   All project content lives here. To add a project or a case study later,
   edit this list — every page (home, project pages) reads from it.
-  folder: the project's folder in "portfolio images"; only files in its include/
-  subfolder are used (run site/tools/sync_portfolio.py after changing them).
-  cover: made from the include/ file with "cover" in its name.
+  folder: the project's folder in "portfolio images" (or a path like ~/Desktop/x);
+  only files in its include/ (or included/) subfolder are used (run site/tools/sync_portfolio.py after changing them).
+  cover: made from the include/ file with "cover" in its name. with no such file,
+  name any image here and it is used for the home-page card only.
+  website, credits, problem and solution ({ title, text }) are optional.
   images: files inside assets/img/<slug>/ ; the first one is the hero.
   wrap files in [ ] to show them side by side at the same height; .mp4 files
   play as looping videos. images are never cropped, except
@@ -12,6 +14,28 @@
   projects are listed newest first.
 */
 window.PROJECTS = [
+  {
+    slug: "track-of-time",
+    folder: "~/Desktop/track of time",
+    title: "track of time",
+    type: "campaign, motion, and web design",
+    year: "2026",
+    credits: "Jaime Lai, Kevin Chang, Claude Code",
+    website: "https://wwinnieliu.github.io/C2.5-Track-of-Time/#landing",
+    overview:
+      "Every day, commuters spend minutes on train platforms beside strangers sharing the same delay, yet no one acknowledges it. Waiting is a set of risograph cards that people fill in on the back with what they’re experiencing while they wait. Each pack also includes a legend card and a narration card. An interactive website collects the cards so visitors can see what everyone else was doing during the same wait. We used vibrant colors throughout to bring out the joy we want commuters to feel, so waiting reads as a shared ritual rather than lost time.",
+    problem: {
+      title: "We wait together, but never really together",
+      text: "We think of the minutes on a train platform as dead time. Strangers share the same delay and the same boredom, but no one acknowledges it, so a shared moment goes by unnoticed.",
+    },
+    solution: {
+      title: "Small Cards for a Shared Pause",
+      text: "A set of risograph cards handed out on the platform. Riders write about their own wait on the back of a card, which turns a few idle minutes into a record that strangers waiting with them can share.",
+    },
+    cover: "pb059851.jpg",
+    card: "card.jpg",
+    images: ["track-of-time-motion.mp4", "clock-ending.mp4", "pb059876.jpg", ["pb059851.jpg", "pb050281.jpg"], ["pb059647.jpg", "pb059731.jpg"], ["pb059761.jpg", "pb050426.jpg"], ["pb050367.jpg", "pb050373.jpg"], ["track-of-time-color-palette.jpg", "pb050526.jpg"]],
+  },
   {
     slug: "design-justice-network-principles",
     folder: "Design Justice Network Principles",
@@ -123,4 +147,4 @@ window.PROJECTS = [
     images: ["cover.jpg", "pinklogosoap.jpg", "greenlogosoap.jpg", "print-layouts.jpg", "screenshot-2026-10-14-at-9-07-05-pm.jpg"],
   },
 ];
-window.MEDIA_VERSION = "1793758379";
+window.MEDIA_VERSION = "1793928354";
