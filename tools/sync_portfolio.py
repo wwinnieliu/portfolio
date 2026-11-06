@@ -83,6 +83,14 @@ def trim_photo(path, shave=0):
     im.save(path, "JPEG", quality=82, optimize=True)
 
 
+def card_fill(edge):
+    """How to grow a card: dark and plain → continue it; dark with the work running off
+    the edge → plain colour (a mirror would duplicate the work); walls, greys → mirror."""
+    if np.median(edge) >= 40:
+        return "mirror"
+    return "stretch" if edge.std((0, 1)).max() < 12 else "solid"
+
+
 def make_card(dst_dir, cover):
     """card.jpg: the cover grown to the card's 4:3 shape by continuing its own
     background (mirrored), so the card never crops the work. None if it already fits."""
@@ -97,10 +105,14 @@ def make_card(dst_dir, cover):
         return None
     if w / h > CARD_AR:
         extra = round(w / CARD_AR) - h
-        im = extend(im, top=extra // 2, bottom=extra - extra // 2, mode="mirror")
+        band = max(4, h // 30)
+        edge = np.concatenate([im[:band], im[-band:]])
+        im = extend(im, top=extra // 2, bottom=extra - extra // 2, mode=card_fill(edge))
     else:
         extra = round(h * CARD_AR) - w
-        im = extend(im, left=extra // 2, right=extra - extra // 2, mode="mirror")
+        band = max(4, w // 30)
+        edge = np.concatenate([im[:, :band], im[:, -band:]], 1)
+        im = extend(im, left=extra // 2, right=extra - extra // 2, mode=card_fill(edge))
     Image.fromarray(im).save(card, "JPEG", quality=82, optimize=True)
     return "card.jpg"
 
@@ -150,9 +162,12 @@ def convert(src, dst, shave=0):
         shutil.copy2(src, dst)
 
 
-def sync_media(slug, folder, shaves=None):
+def sync_media(slug, folder, shaves=None, card_from=None):
     shaves = shaves or {}
-    inc = os.path.join(BASE, folder, "include")
+    root = os.path.join(BASE, os.path.expanduser(folder))
+    inc = os.path.join(root, "include")
+    if not os.path.isdir(inc):
+        inc = os.path.join(root, "included")
     if not os.path.isdir(inc):
         print(f"  ! {inc} not found, skipped")
         return None
@@ -199,7 +214,8 @@ def sync_media(slug, folder, shaves=None):
     if not covers:
         print(f"  ! no file with 'cover' in its name in {folder}/include")
     cover = covers[0] if covers else None
-    return made, cover, make_card(dst_dir, cover)
+    # no "cover" file: the cover: named in projects.js is used for the card only
+    return made, cover, make_card(dst_dir, cover or (card_from if card_from in made else None))
 
 
 def merge_layout(layout, made, cover):
@@ -229,12 +245,16 @@ def main():
         print(slug)
         # shave: { "file.jpg": 0.02 } cuts 2% off every side of that picture
         m = re.search(r"shave: (\{.*?\}),\n", b, re.S)
-        res = sync_media(slug, folder.group(1), json.loads(m.group(1)) if m else None)
+        named = re.search(r'cover: "([^"]+)"', b)
+        res = sync_media(slug, folder.group(1), json.loads(m.group(1)) if m else None,
+                         named.group(1) if named else None)
         if not res:
             return b
         made, cover, card = res
         layout = json.loads(re.search(r"images: (\[.*?\]),\n", b, re.S).group(1))
-        images = json.dumps(merge_layout(layout, made, cover), ensure_ascii=False).replace('","', '", "')
+        # keep_order: the cover is still the card, but the page keeps its own opening
+        keep = "keep_order: true" in b
+        images = json.dumps(merge_layout(layout, made, None if keep else cover), ensure_ascii=False).replace('","', '", "')
         b = re.sub(r"images: \[.*?\],\n", lambda _: f"images: {images},\n", b, flags=re.S)
         b = re.sub(r'    card: "[^"]*",\n', "", b)
         if card:

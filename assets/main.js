@@ -156,7 +156,7 @@
     const mount = document.querySelector("[data-project]");
     if (p && mount) {
       document.title = `${p.title} — winnie liu`;
-      const facts = [["project type", p.type], ["year", p.year], ["my role", p.role], ["client", p.client]].filter((f) => f[1]);
+      const facts = [["project type", p.type], ["year", p.year], ["my role", p.role], ["client", p.client], ["credits", p.credits]].filter((f) => f[1]);
       const media = (f, lazy) => isVideo(f)
         ? `<video src="${imgUrl(p, f)}" poster="${poster(p, f)}" autoplay muted loop playsinline preload="${lazy ? "metadata" : "auto"}"></video>`
         : `<img src="${imgUrl(p, f)}" alt="${esc(p.title)}"${lazy ? ' loading="lazy" decoding="async"' : ""}>`;
@@ -170,8 +170,9 @@
       mount.innerHTML = `
         <h1 class="display display--md project__title">${esc(p.title)}</h1>
         <figure class="shot">${media(p.images[0], false)}</figure>
-        ${p.overview ? `<section class="overview"><p class="label">project overview</p><p class="overview__text">${esc(p.overview)}</p></section>` : ""}
+        ${p.overview ? `<section class="overview"><p class="label">project overview</p><p class="overview__text">${esc(p.overview)}</p>${p.website ? `<a class="project__link" href="${esc(p.website)}" target="_blank" rel="noopener">website <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M4 20 20 4M7 4h13v13"/></svg></a>` : ""}</section>` : ""}
         ${facts.length ? `<section class="facts">${facts.map(([k, v]) => `<div><p class="label">${k}</p><p class="val">${esc(v)}</p></div>`).join("")}</section>` : `<div style="height:96px"></div>`}
+        ${[["problem", p.problem], ["solution", p.solution]].filter((x) => x[1]).map(([k, v]) => `<section class="story"><p class="story__tag">${k}</p><div><h2 class="story__title">${esc(v.title)}</h2><p class="story__text">${esc(v.text)}</p></div></section>`).join("")}
         <section class="gallery">
           ${p.images.slice(1).map(row).join("")}
         </section>
@@ -183,7 +184,8 @@
           <h2 class="display display--md">other projects</h2>
           <div class="grid grid--3" data-others></div>
         </section>`;
-      // rows: every cell gets the same shape (the average of the pictures' shapes),
+      // rows: every cell gets the same shape (the widest picture's; for videos, the
+      // average, so a phone next to a laptop stays readable),
       // and the cell is filled with the colour at the picture's edge, so a picture
       // with a different shape looks like its background simply continues.
       const edgeColour = (el, w, h) => {
@@ -212,7 +214,9 @@
             const fill = edgeColour(el, w, h);
             if (fill) fig.style.setProperty("--fill", fill);
             if (ars.filter(Boolean).length === figs.length) {
-              const cell = Math.exp(ars.reduce((s, a) => s + Math.log(a), 0) / ars.length);
+              const cell = figs.some((f) => f.firstElementChild.tagName === "VIDEO")
+                ? Math.exp(ars.reduce((s, a) => s + Math.log(a), 0) / ars.length)
+                : Math.max(...ars);
               rowEl.style.setProperty("--cell", cell);
             }
           };
